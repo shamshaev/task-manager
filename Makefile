@@ -1,33 +1,32 @@
 setup:
-	make -C app wrapper --gradle-version 8.5
-	make -C app build
+	make -C app setup
 
 app:
-	make -C app bootRun --args='--spring.profiles.active=dev'
+	make -C app app
 
 clean:
 	make -C app clean
 
 build:
-	make -C app clean build
+	make -C app build
 
 dev: app
 
 reload-classes:
-	make -C app -t classes
+	make -C app reload-classes
 
 install:
-	make -C app installDist
+	make -C app install
 
 test:
 	make -C app test
 
 report:
-	make -C app jacocoTestReport
+	make -C app report
 
 check-java-deps:
-	make -C app dependencyUpdates -Drevision=release
+	make -C app check-java-deps
 
 start:
-	make -C app run
+	make -C app start
 
