@@ -1,0 +1,6 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://dpg-cqi24cjgbbvc73e5qekg-a:5432/prod_db_ka8w
+    username: prod_db_ka8w_user
+    password: rZTbribDCyUBc8x0ORM3VTdvPihQjuLj
+    driver-class-name: org.postgresql.Driver
