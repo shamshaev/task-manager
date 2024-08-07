@@ -4,3 +4,5 @@ spring:
     username: prod_db_ka8w_user
     password: rZTbribDCyUBc8x0ORM3VTdvPihQjuLj
     driver-class-name: org.postgresql.Driver
+  jpa:
+    database: postgresql
