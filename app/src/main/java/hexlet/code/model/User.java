@@ -32,14 +32,14 @@ public class User /*implements UserDetails*/ {
     @GeneratedValue(strategy = IDENTITY)
     private Long id;
 
-    private String firstName;
-
-    private String lastName;
-
     @NotNull
     @Email
     @Column(unique = true)
     private String email;
+
+    private String firstName;
+
+    private String lastName;
 
     private String passwordDigest;
 
