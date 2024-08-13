@@ -6,7 +6,7 @@ COPY . /app
 
 RUN gradle installDist
 
-CMD ./build/install/app/bin/app
+CMD ./build/install/TaskManager/bin/TaskManager
 
 #FROM ubuntu:latest
 #LABEL authors="andrey"
