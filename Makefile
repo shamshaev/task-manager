@@ -1,32 +1,34 @@
 setup:
-	make -C app setup
+	./gradlew wrapper --gradle-version 8.5
+	./gradlew build
 
 app:
-	make -C app app
+	./gradlew bootRun --args='--spring.profiles.active=dev'
 
 clean:
-	make -C app clean
+	./gradlew clean
 
 build:
-	make -C app build
+	./gradlew clean build
 
 dev: app
 
 reload-classes:
-	make -C app reload-classes
+	./gradlew -t classes
 
 install:
-	make -C app install
+	./gradlew installDist
 
 test:
-	make -C app test
+	./gradlew test
 
 report:
-	make -C app report
+	./gradlew jacocoTestReport
 
 check-java-deps:
-	make -C app check-java-deps
+	./gradlew dependencyUpdates -Drevision=release
 
 start:
-	make -C app start
+	./gradlew run
 
+.PHONY: build
