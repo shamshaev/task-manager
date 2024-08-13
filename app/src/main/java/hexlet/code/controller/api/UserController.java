@@ -6,10 +6,12 @@ import hexlet.code.dto.UserUpdateDTO;
 import hexlet.code.exception.ResourceNotFoundException;
 import hexlet.code.mapper.UserMapper;
 import hexlet.code.repository.UserRepository;
+import hexlet.code.util.UserUtils;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api")
 public class UserController {
 
     @Autowired
@@ -32,7 +34,10 @@ public class UserController {
     @Autowired
     private UserMapper userMapper;
 
-    @GetMapping
+    @Autowired
+    private UserUtils userUtils;
+
+    @GetMapping("/users")
     public ResponseEntity<List<UserDTO>> index() {
         var users = userRepository.findAll().stream()
                 .map(userMapper::map)
@@ -43,14 +48,14 @@ public class UserController {
                 .body(users);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/users/{id}")
     public UserDTO show(@PathVariable Long id) {
         var user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " not found"));
         return userMapper.map(user);
     }
 
-    @PostMapping
+    @PostMapping("/users")
     @ResponseStatus(HttpStatus.CREATED)
     public UserDTO create(@RequestBody @Valid UserCreateDTO userData) {
         var user = userMapper.map(userData);
@@ -58,7 +63,8 @@ public class UserController {
         return userMapper.map(user);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/users/{id}")
+    @PreAuthorize("@userUtils.isOwner(#id)")
     public UserDTO update(@RequestBody @Valid UserUpdateDTO userData, @PathVariable Long id) {
         var user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " not found"));
@@ -67,7 +73,8 @@ public class UserController {
         return userMapper.map(user);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/users/{id}")
+    @PreAuthorize("@userUtils.isOwner(#id)")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void destroy(@PathVariable Long id) {
         userRepository.deleteById(id);

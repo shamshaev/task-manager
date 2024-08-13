@@ -8,13 +8,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-//import org.springframework.security.core.GrantedAuthority;
-//import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -27,18 +28,23 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 @EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
-public class User /*implements UserDetails*/ {
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @NotNull
     @Email
     @Column(unique = true)
+    @EqualsAndHashCode.Include
     private String email;
 
+    @EqualsAndHashCode.Include
     private String firstName;
 
+    @EqualsAndHashCode.Include
     private String lastName;
 
     private String passwordDigest;
@@ -49,7 +55,6 @@ public class User /*implements UserDetails*/ {
     @LastModifiedDate
     private LocalDate updatedAt;
 
-    /*
     @Override
     public String getPassword() {
         return passwordDigest;
@@ -84,6 +89,4 @@ public class User /*implements UserDetails*/ {
     public boolean isCredentialsNonExpired() {
         return true;
     }
-
-     */
 }

@@ -34,16 +34,17 @@ dependencies {
 	implementation("org.openapitools:jackson-databind-nullable:0.2.6")
 	implementation("org.mapstruct:mapstruct:1.5.5.Final")
 	annotationProcessor("org.mapstruct:mapstruct-processor:1.5.5.Final")
-	//implementation("org.springframework.boot:spring-boot-starter-security")
+	implementation("org.springframework.boot:spring-boot-starter-security")
+	implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
 
 	testImplementation(platform("org.junit:junit-bom:5.10.0"))
 	testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
-	//testImplementation("org.springframework.security:spring-security-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 	implementation("org.instancio:instancio-junit:3.6.0")
 	implementation("net.javacrumbs.json-unit:json-unit-assertj:3.2.2")
 	implementation("net.datafaker:datafaker:2.0.2")
+	testImplementation("org.springframework.security:spring-security-test")
 }
 
 tasks.withType<Test> {

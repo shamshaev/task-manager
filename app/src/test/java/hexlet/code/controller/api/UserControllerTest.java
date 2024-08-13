@@ -4,6 +4,8 @@ import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -12,16 +14,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import hexlet.code.dto.UserCreateDTO;
+import com.fasterxml.jackson.core.type.TypeReference;
 import hexlet.code.dto.UserUpdateDTO;
+import hexlet.code.dto.UserDTO;
 import hexlet.code.exception.ResourceNotFoundException;
 import hexlet.code.mapper.UserMapper;
 import hexlet.code.model.User;
 import hexlet.code.repository.UserRepository;
 
+import hexlet.code.util.ModelGenerator;
 import net.datafaker.Faker;
 import org.instancio.Instancio;
-import org.instancio.Select;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openapitools.jackson.nullable.JsonNullable;
@@ -33,10 +36,19 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.RequestBuilder;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
+
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 class UserControllerTest {
+
+    @Autowired
+    private WebApplicationContext wac;
 
     @Autowired
     private MockMvc mockMvc;
@@ -50,45 +62,51 @@ class UserControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private final Faker faker = new Faker();
+    @Autowired
+    private Faker faker;
+
+    @Autowired
+    private ModelGenerator modelGenerator;
+
+    private JwtRequestPostProcessor token;
 
     private User testUser;
 
     @BeforeEach
     public void setUp() {
-        testUser = Instancio.of(User.class)
-                .ignore(Select.field(User::getId))
-                .supply(Select.field(User::getEmail), () -> faker.internet().emailAddress())
-                .supply(Select.field(User::getFirstName), () -> faker.name().firstName())
-                .supply(Select.field(User::getLastName), () -> faker.name().lastName())
-                .supply(Select.field(User::getPasswordDigest), () -> faker.internet().password())
+        mockMvc = MockMvcBuilders.webAppContextSetup(wac)
+                .defaultResponseCharacterEncoding(StandardCharsets.UTF_8)
+                .apply(springSecurity())
+                .build();
+
+        testUser = Instancio.of(modelGenerator.getUserModel())
                 .create();
+        userRepository.save(testUser);
+
+        token = jwt().jwt(builder -> builder.subject(testUser.getEmail()));
     }
 
     @Test
     public void testIndex() throws Exception {
-        //given
-        userRepository.save(testUser);
-        //when
-        MvcResult result = mockMvc.perform(get("/api/users"))
+        MvcResult result = mockMvc.perform(get("/api/users").with(jwt()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andReturn();
-        //then
+
         MockHttpServletResponse response = result.getResponse();
-        assertThatJson(response.getContentAsString()).isArray();
+        List<UserDTO> userDTOS = objectMapper.readValue(response.getContentAsString(), new TypeReference<>() {});
+        var actual = userDTOS.stream().map(userMapper::map).toList();
+        var expected = userRepository.findAll();
+        assertThat(actual).containsExactlyInAnyOrderElementsOf(expected);
     }
 
     @Test
     public void testShow() throws Exception {
-        //given
-        userRepository.save(testUser);
-        //when
-        MvcResult result = mockMvc.perform(get("/api/users/" + testUser.getId()))
+        MvcResult result = mockMvc.perform(get("/api/users/" + testUser.getId()).with(jwt()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andReturn();
-        //then
+
         MockHttpServletResponse response = result.getResponse();
         assertThatJson(response.getContentAsString()).and(
                 v -> v.node("email").isEqualTo(testUser.getEmail()),
@@ -99,58 +117,78 @@ class UserControllerTest {
 
     @Test
     public void testCreate() throws Exception {
-        //given
-        //var dto = userMapper.map(testUser);
-        var dto = new UserCreateDTO();
-        dto.setEmail("anna@gmail.com");
-        dto.setFirstName("anna");
-        dto.setPassword("545");
-        //when
+        var data = Instancio.of(modelGenerator.getUserModel())
+                .create();
+
         RequestBuilder request = post("/api/users")
+                .with(jwt())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(dto));
+                .content(objectMapper.writeValueAsString(data));
 
         mockMvc.perform(request)
                 .andDo(print())
                 .andExpect(status().isCreated());
-        //then
-        var user = userRepository.findByEmail(dto.getEmail())
-                .orElseThrow(() -> new ResourceNotFoundException("User with email '" + dto.getEmail() + "' not found"));
+
+        var user = userRepository.findByEmail(data.getEmail())
+                .orElseThrow(() -> new ResourceNotFoundException("User with email '" + data.getEmail() + "' not found"));
         assertNotNull(user);
-        assertThat(user.getFirstName()).isEqualTo(dto.getFirstName());
-        assertThat(user.getLastName()).isEqualTo(dto.getLastName());
+        assertThat(user.getFirstName()).isEqualTo(data.getFirstName());
+        assertThat(user.getLastName()).isEqualTo(data.getLastName());
     }
 
     @Test
     public void testUpdate() throws Exception {
-        //given
-        userRepository.save(testUser);
-
         var dto = new UserUpdateDTO();
         dto.setFirstName(JsonNullable.of("updated_name"));
-        //when
+
         RequestBuilder request = put("/api/users/" + testUser.getId())
+                .with(token)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto));
 
         mockMvc.perform(request)
                 .andDo(print())
                 .andExpect(status().isOk());
-        //then
+
         var user = userRepository.findByEmail(testUser.getEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("User with email '" + testUser.getEmail() + "' not found"));
         assertThat(user.getFirstName()).isEqualTo(dto.getFirstName().get());
     }
 
     @Test
+    public void testUpdateFailed() throws Exception {
+        var dto = new UserUpdateDTO();
+        dto.setFirstName(JsonNullable.of("updated_name"));
+
+        RequestBuilder request = put("/api/users/" + testUser.getId())
+                .with(jwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto));
+
+        mockMvc.perform(request)
+                .andDo(print())
+                .andExpect(status().isForbidden());
+
+        var user = userRepository.findByEmail(testUser.getEmail())
+                .orElseThrow(() -> new ResourceNotFoundException("User with email '" + testUser.getEmail() + "' not found"));
+        assertThat(user.getFirstName()).isEqualTo(testUser.getFirstName());
+    }
+
+    @Test
     public void testDestroy() throws Exception {
-        //given
-        userRepository.save(testUser);
-        //when
-        mockMvc.perform(delete("/api/users/" + testUser.getId()))
+        mockMvc.perform(delete("/api/users/" + testUser.getId()).with(token))
                 .andDo(print())
                 .andExpect(status().isNoContent());
-        //then
+
         assertThat(userRepository.existsById(testUser.getId())).isEqualTo(false);
+    }
+
+    @Test
+    public void testDestroyFailed() throws Exception {
+        mockMvc.perform(delete("/api/users/" + testUser.getId()).with(jwt()))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+
+        assertThat(userRepository.existsById(testUser.getId())).isEqualTo(true);
     }
 }
