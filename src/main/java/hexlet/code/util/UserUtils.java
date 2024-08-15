@@ -32,4 +32,8 @@ public class UserUtils {
         return user.getEmail().equals(authentication.getName());
     }
 
+    public User getTestUser() {
+        return userRepository.findByEmail("hexlet@example.com")
+                .orElseThrow(() -> new RuntimeException("User doesn't exist"));
+    }
 }

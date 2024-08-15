@@ -1,10 +1,10 @@
 package hexlet.code.model;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import lombok.EqualsAndHashCode;
@@ -18,12 +18,12 @@ import java.time.LocalDate;
 import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Entity
-@Table(name = "task_statuses")
+@Table(name = "tasks")
 @EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class TaskStatus implements BaseEntity {
+public class Task implements BaseEntity {
     @Id
     @GeneratedValue(strategy = IDENTITY)
     @EqualsAndHashCode.Include
@@ -33,10 +33,19 @@ public class TaskStatus implements BaseEntity {
     @EqualsAndHashCode.Include
     private String name;
 
-    @NotBlank
-    @Column(unique = true)
     @EqualsAndHashCode.Include
-    private String slug;
+    private Integer index;
+
+    @EqualsAndHashCode.Include
+    private String description;
+
+    @EqualsAndHashCode.Include
+    @ManyToOne(optional = false)
+    private TaskStatus taskStatus;
+
+    @EqualsAndHashCode.Include
+    @ManyToOne
+    private User assignee;
 
     @CreatedDate
     private LocalDate createdAt;
