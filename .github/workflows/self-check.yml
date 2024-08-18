@@ -20,7 +20,7 @@ jobs:
       - name: Build with Gradle
         run: make build
       - name: Quality check
-        run: make test
+        run: make lint test
       - name: Test & publish code coverage
         uses: paambaati/codeclimate-action@v5.0.0
         env:
