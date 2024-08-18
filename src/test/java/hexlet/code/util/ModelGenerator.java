@@ -1,5 +1,6 @@
 package hexlet.code.util;
 
+import hexlet.code.model.Label;
 import hexlet.code.model.Task;
 import hexlet.code.model.TaskStatus;
 import hexlet.code.model.User;
@@ -19,6 +20,7 @@ public class ModelGenerator {
     private Model<User> userModel;
     private Model<TaskStatus> taskStatusModel;
     private Model<Task> taskModel;
+    private Model<Label> labelModel;
 
     @Autowired
     private Faker faker;
@@ -41,9 +43,18 @@ public class ModelGenerator {
 
         taskModel = Instancio.of(Task.class)
                 .ignore(Select.field(Task::getId))
+                .supply(Select.field(Task::getIndex), () -> faker.number().randomDigit())
                 .supply(Select.field(Task::getName), () -> faker.gameOfThrones().dragon())
                 .supply(Select.field(Task::getDescription), () -> faker.gameOfThrones().quote())
-                .supply(Select.field(Task::getIndex), () -> faker.number().randomDigit())
+                .ignore(Select.field(Task::getTaskStatus))
+                .ignore(Select.field(Task::getAssignee))
+                .ignore(Select.field(Task::getTaskLabels))
+                .toModel();
+
+        labelModel = Instancio.of(Label.class)
+                .ignore(Select.field(Label::getId))
+                .supply(Select.field(Label::getName), () -> faker.internet().slug())
+                .ignore(Select.field(Label::getTasks))
                 .toModel();
     }
 }

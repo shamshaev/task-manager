@@ -4,7 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-public enum TaskStatusSet {
+public enum PreTaskStatus {
     DRAFT,
     TO_REVIEW,
     TO_BE_FIXED,

@@ -94,7 +94,7 @@ class UserControllerTest {
                 .andReturn();
 
         MockHttpServletResponse response = result.getResponse();
-        List<UserDTO> userDTOS = objectMapper.readValue(response.getContentAsString(), new TypeReference<>() {});
+        List<UserDTO> userDTOS = objectMapper.readValue(response.getContentAsString(), new TypeReference<>() { });
         var actual = userDTOS.stream().map(userMapper::map).toList();
         var expected = userRepository.findAll();
         assertThat(actual).containsExactlyInAnyOrderElementsOf(expected);
@@ -130,7 +130,8 @@ class UserControllerTest {
                 .andExpect(status().isCreated());
 
         var user = userRepository.findByEmail(data.getEmail())
-                .orElseThrow(() -> new ResourceNotFoundException("User with email '" + data.getEmail() + "' not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User with email '"
+                        + data.getEmail() + "' not found"));
         assertNotNull(user);
         assertThat(user.getFirstName()).isEqualTo(data.getFirstName());
         assertThat(user.getLastName()).isEqualTo(data.getLastName());
@@ -151,7 +152,8 @@ class UserControllerTest {
                 .andExpect(status().isOk());
 
         var user = userRepository.findByEmail(testUser.getEmail())
-                .orElseThrow(() -> new ResourceNotFoundException("User with email '" + testUser.getEmail() + "' not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User with email '"
+                        + testUser.getEmail() + "' not found"));
         assertThat(user.getFirstName()).isEqualTo(dto.getFirstName().get());
     }
 
@@ -170,7 +172,8 @@ class UserControllerTest {
                 .andExpect(status().isForbidden());
 
         var user = userRepository.findByEmail(testUser.getEmail())
-                .orElseThrow(() -> new ResourceNotFoundException("User with email '" + testUser.getEmail() + "' not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User with email '"
+                        + testUser.getEmail() + "' not found"));
         assertThat(user.getFirstName()).isEqualTo(testUser.getFirstName());
     }
 

@@ -2,15 +2,13 @@ package hexlet.code.controller.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import hexlet.code.dto.TaskDTO;
-import hexlet.code.dto.TaskUpdateDTO;
+import hexlet.code.dto.LabelDTO;
+import hexlet.code.dto.LabelUpdateDTO;
 import hexlet.code.exception.ResourceNotFoundException;
-import hexlet.code.mapper.TaskMapper;
-import hexlet.code.model.Task;
-import hexlet.code.repository.TaskRepository;
-import hexlet.code.repository.TaskStatusRepository;
+import hexlet.code.mapper.LabelMapper;
+import hexlet.code.model.Label;
+import hexlet.code.repository.LabelRepository;
 import hexlet.code.util.ModelGenerator;
-import hexlet.code.util.UserUtils;
 import jakarta.transaction.Transactional;
 import net.datafaker.Faker;
 import org.instancio.Instancio;
@@ -46,7 +44,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class TaskControllerTest {
+class LabelControllerTest {
     @Autowired
     private WebApplicationContext wac;
 
@@ -54,16 +52,10 @@ class TaskControllerTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private UserUtils userUtils;
+    private LabelRepository labelRepository;
 
     @Autowired
-    private TaskRepository taskRepository;
-
-    @Autowired
-    private TaskStatusRepository taskStatusRepository;
-
-    @Autowired
-    private TaskMapper taskMapper;
+    private LabelMapper labelMapper;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -76,7 +68,7 @@ class TaskControllerTest {
 
     private SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor token;
 
-    private Task testTask;
+    private Label testLabel;
 
     @BeforeEach
     public void setUp() {
@@ -85,85 +77,66 @@ class TaskControllerTest {
                 .apply(springSecurity())
                 .build();
 
-        testTask = Instancio.of(modelGenerator.getTaskModel())
+        testLabel = Instancio.of(modelGenerator.getLabelModel())
                 .create();
-        var testStatus = Instancio.of(modelGenerator.getTaskStatusModel())
-                .create();
-        taskStatusRepository.save(testStatus);
-        testTask.setTaskStatus(testStatus);
-        testTask.setAssignee(userUtils.getTestUser());
-
-        System.out.println("!!!!!!!!!!!!!!!!");
-        System.out.println(testTask);
-        taskRepository.save(testTask);
-
-        //token = jwt().jwt(builder -> builder.subject("hexlet@example.com"));
+        labelRepository.save(testLabel);
     }
 
     @Test
     @Transactional
     public void testIndex() throws Exception {
-
-
-        MvcResult result = mockMvc.perform(get("/api/tasks").with(jwt()))
+        MvcResult result = mockMvc.perform(get("/api/labels").with(jwt()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andReturn();
 
         MockHttpServletResponse response = result.getResponse();
-        List<TaskDTO> taskDTOS = objectMapper.readValue(response.getContentAsString(), new TypeReference<>() { });
-        var actual = taskDTOS.stream().map(taskMapper::map).toList();
-        var expected = taskRepository.findAll();
+        List<LabelDTO> labelDTOS = objectMapper.readValue(response.getContentAsString(), new TypeReference<>() { });
+        var actual = labelDTOS.stream().map(labelMapper::map).toList();
+        var expected = labelRepository.findAll();
         assertThat(actual).containsExactlyInAnyOrderElementsOf(expected);
     }
 
     @Test
     public void testShow() throws Exception {
-
-        MvcResult result = mockMvc.perform(get("/api/tasks/" + testTask.getId()).with(jwt()))
+        MvcResult result = mockMvc.perform(get("/api/labels/" + testLabel.getId()).with(jwt()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andReturn();
 
         MockHttpServletResponse response = result.getResponse();
         assertThatJson(response.getContentAsString()).and(
-                v -> v.node("title").isEqualTo(testTask.getName()),
-                v -> v.node("content").isEqualTo(testTask.getDescription())
+                v -> v.node("name").isEqualTo(testLabel.getName())
         );
     }
 
     @Test
     public void testCreate() throws Exception {
-        testTask.setName("new_name");
-        var dto = taskMapper.map(testTask);
+        var data = Instancio.of(modelGenerator.getLabelModel())
+                .create();
 
-        RequestBuilder request = post("/api/tasks")
+        RequestBuilder request = post("/api/labels")
                 .with(jwt())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(dto));
+                .content(objectMapper.writeValueAsString(data));
 
-        MvcResult result = mockMvc.perform(request)
+        mockMvc.perform(request)
                 .andDo(print())
-                .andExpect(status().isCreated())
-                .andReturn();
+                .andExpect(status().isCreated());
 
-        MockHttpServletResponse response = result.getResponse();
-        TaskDTO responseDTO = objectMapper.readValue(response.getContentAsString(), TaskDTO.class);
-        Task task = taskRepository.findById(responseDTO.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Task with id '"
-                        + responseDTO.getId() + "' not found"));
-        assertNotNull(task);
-        assertThat(task.getName()).isEqualTo(dto.getTitle());
-        assertThat(task.getDescription()).isEqualTo(dto.getContent());
+        var label = labelRepository.findByName(data.getName())
+                .orElseThrow(() -> new ResourceNotFoundException("Label with name '"
+                        + data.getName() + "' not found"));
+        assertNotNull(label);
+        assertThat(label.getName()).isEqualTo(data.getName());
     }
 
     @Test
     public void testUpdate() throws Exception {
+        var dto = new LabelUpdateDTO();
+        dto.setName(JsonNullable.of("updated_name"));
 
-        var dto = new TaskUpdateDTO();
-        dto.setTitle(JsonNullable.of("updated_name"));
-
-        RequestBuilder request = put("/api/tasks/" + testTask.getId())
+        RequestBuilder request = put("/api/labels/" + testLabel.getId())
                 .with(jwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto));
@@ -172,19 +145,18 @@ class TaskControllerTest {
                 .andDo(print())
                 .andExpect(status().isOk());
 
-        var task = taskRepository.findById(testTask.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Task with id '"
-                        + testTask.getId() + "' not found"));
-        assertThat(task.getName()).isEqualTo(dto.getTitle().get());
+        var label = labelRepository.findById(testLabel.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Label with id '"
+                        + testLabel.getId() + "' not found"));
+        assertThat(label.getName()).isEqualTo(dto.getName().get());
     }
 
     @Test
     public void testDestroy() throws Exception {
-
-        mockMvc.perform(delete("/api/tasks/" + testTask.getId()).with(jwt()))
+        mockMvc.perform(delete("/api/labels/" + testLabel.getId()).with(jwt()))
                 .andDo(print())
                 .andExpect(status().isNoContent());
 
-        assertThat(taskRepository.existsById(testTask.getId())).isEqualTo(false);
+        assertThat(labelRepository.existsById(testLabel.getId())).isEqualTo(false);
     }
 }

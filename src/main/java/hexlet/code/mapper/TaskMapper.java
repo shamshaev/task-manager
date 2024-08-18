@@ -4,8 +4,10 @@ import hexlet.code.dto.TaskCreateDTO;
 import hexlet.code.dto.TaskDTO;
 import hexlet.code.dto.TaskUpdateDTO;
 import hexlet.code.exception.ResourceNotFoundException;
+import hexlet.code.model.Label;
 import hexlet.code.model.Task;
 import hexlet.code.model.TaskStatus;
+import hexlet.code.repository.LabelRepository;
 import hexlet.code.repository.TaskStatusRepository;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -26,33 +28,46 @@ public abstract class TaskMapper {
     @Autowired
     private TaskStatusRepository taskStatusRepository;
 
+    @Autowired
+    private LabelRepository labelRepository;
+
     @Mapping(source = "title", target = "name")
     @Mapping(source = "content", target = "description")
     @Mapping(source = "status", target = "taskStatus", qualifiedByName = "statusToTaskStatus")
-    @Mapping(source = "assignee_id", target = "assignee")
+    @Mapping(source = "assigneeId", target = "assignee")
+    @Mapping(source = "taskLabelIds", target = "taskLabels", qualifiedByName = "labelIdToLabel")
     public abstract Task map(TaskCreateDTO dto);
 
     @Mapping(source = "name", target = "title")
     @Mapping(source = "description", target = "content")
     @Mapping(source = "taskStatus.slug", target = "status")
-    @Mapping(source = "assignee.id", target = "assignee_id")
+    @Mapping(source = "assignee.id", target = "assigneeId")
+    @Mapping(source = "taskLabels", target = "taskLabelIds")
     public abstract TaskDTO map(Task model);
 
     @Mapping(source = "title", target = "name")
     @Mapping(source = "content", target = "description")
     @Mapping(source = "status", target = "taskStatus", qualifiedByName = "statusToTaskStatus")
-    @Mapping(source = "assignee_id", target = "assignee")
+    @Mapping(source = "assigneeId", target = "assignee")
+    @Mapping(source = "taskLabelIds", target = "taskLabels", qualifiedByName = "labelIdToLabel")
     public abstract Task map(TaskDTO dto);
 
     @Mapping(source = "title", target = "name")
     @Mapping(source = "content", target = "description")
     @Mapping(source = "status", target = "taskStatus", qualifiedByName = "statusToTaskStatus")
-    @Mapping(source = "assignee_id", target = "assignee")
+    @Mapping(source = "assigneeId", target = "assignee")
+    @Mapping(source = "taskLabelIds", target = "taskLabels", qualifiedByName = "labelIdToLabel")
     public abstract void update(TaskUpdateDTO dto, @MappingTarget Task model);
 
     @Named("statusToTaskStatus")
     public TaskStatus statusToTaskStatus(String slug) {
         return taskStatusRepository.findBySlug(slug)
-                .orElseThrow(() -> new ResourceNotFoundException("TaskStatus with slug " + slug + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("TaskStatus with slug '" + slug + "' not found"));
+    }
+
+    @Named("labelIdToLabel")
+    public Label labelIdToLabel(Long id) {
+        return labelRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Label with id '" + id + "' not found"));
     }
 }

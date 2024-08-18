@@ -17,4 +17,8 @@ public abstract class ReferenceMapper {
     public <T extends BaseEntity> T toEntity(Long id, @TargetType Class<T> entityClass) {
         return id != null ? entityManager.find(entityClass, id) : null;
     }
+
+    public Long toId(BaseEntity entity) {
+        return entity.getId();
+    }
 }

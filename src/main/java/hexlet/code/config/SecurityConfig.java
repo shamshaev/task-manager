@@ -34,7 +34,8 @@ public class SecurityConfig {
     private CustomUserDetailsService userService;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, HandlerMappingIntrospector introspector) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                                   HandlerMappingIntrospector introspector) throws Exception {
         return http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
@@ -42,6 +43,7 @@ public class SecurityConfig {
                         .requestMatchers("/").permitAll()
                         .requestMatchers("/index.html").permitAll()
                         .requestMatchers("/assets/**").permitAll()
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .oauth2ResourceServer(rs -> rs.jwt((jwt) -> jwt.decoder(jwtDecoder)))

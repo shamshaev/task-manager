@@ -91,7 +91,8 @@ class TaskStatusControllerTest {
                 .andReturn();
 
         MockHttpServletResponse response = result.getResponse();
-        List<TaskStatusDTO> taskStatusDTOS = objectMapper.readValue(response.getContentAsString(), new TypeReference<>() {});
+        List<TaskStatusDTO> taskStatusDTOS = objectMapper.readValue(response.getContentAsString(),
+                new TypeReference<>() { });
         var actual = taskStatusDTOS.stream().map(taskStatusMapper::map).toList();
         var expected = taskStatusRepository.findAll();
         assertThat(actual).containsExactlyInAnyOrderElementsOf(expected);
@@ -99,7 +100,8 @@ class TaskStatusControllerTest {
 
     @Test
     public void testShow() throws Exception {
-        MvcResult result = mockMvc.perform(get("/api/task_statuses/" + testTaskStatus.getId()).with(jwt()))
+        MvcResult result = mockMvc.perform(get("/api/task_statuses/"
+                        + testTaskStatus.getId()).with(jwt()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andReturn();
@@ -126,7 +128,8 @@ class TaskStatusControllerTest {
                 .andExpect(status().isCreated());
 
         var taskStatus = taskStatusRepository.findBySlug(data.getSlug())
-                .orElseThrow(() -> new ResourceNotFoundException("TaskStatus with slug '" + data.getSlug() + "' not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("TaskStatus with slug '"
+                        + data.getSlug() + "' not found"));
         assertNotNull(taskStatus);
         assertThat(taskStatus.getName()).isEqualTo(data.getName());
         assertThat(taskStatus.getSlug()).isEqualTo(data.getSlug());
@@ -147,7 +150,8 @@ class TaskStatusControllerTest {
                 .andExpect(status().isOk());
 
         var taskStatus = taskStatusRepository.findBySlug(testTaskStatus.getSlug())
-                .orElseThrow(() -> new ResourceNotFoundException("TaskStatus with slug '" + testTaskStatus.getSlug() + "' not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("TaskStatus with slug '"
+                        + testTaskStatus.getSlug() + "' not found"));
         assertThat(taskStatus.getName()).isEqualTo(dto.getName().get());
     }
 
