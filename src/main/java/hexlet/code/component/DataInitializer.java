@@ -5,7 +5,6 @@ import hexlet.code.model.TaskStatus;
 import hexlet.code.model.User;
 import hexlet.code.repository.LabelRepository;
 import hexlet.code.repository.TaskStatusRepository;
-import hexlet.code.repository.UserRepository;
 import hexlet.code.service.CustomUserDetailsService;
 import hexlet.code.util.PreLabel;
 import hexlet.code.util.PreTaskStatus;
@@ -16,9 +15,6 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class DataInitializer implements ApplicationRunner {
-
-    @Autowired
-    private UserRepository userRepository;
 
     @Autowired
     private CustomUserDetailsService customUserDetailsService;

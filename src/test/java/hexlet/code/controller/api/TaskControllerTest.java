@@ -6,13 +6,12 @@ import hexlet.code.dto.TaskDTO;
 import hexlet.code.dto.TaskUpdateDTO;
 import hexlet.code.exception.ResourceNotFoundException;
 import hexlet.code.mapper.TaskMapper;
+import hexlet.code.model.Label;
 import hexlet.code.model.Task;
 import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.TaskStatusRepository;
 import hexlet.code.util.ModelGenerator;
 import hexlet.code.util.UserUtils;
-import jakarta.transaction.Transactional;
-import net.datafaker.Faker;
 import org.instancio.Instancio;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,7 +21,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.RequestBuilder;
@@ -31,6 +29,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Set;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -69,12 +68,7 @@ class TaskControllerTest {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private Faker faker;
-
-    @Autowired
     private ModelGenerator modelGenerator;
-
-    private SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor token;
 
     private Task testTask;
 
@@ -92,18 +86,19 @@ class TaskControllerTest {
         taskStatusRepository.save(testStatus);
         testTask.setTaskStatus(testStatus);
         testTask.setAssignee(userUtils.getTestUser());
-
-        System.out.println("!!!!!!!!!!!!!!!!");
-        System.out.println(testTask);
+        var label = Instancio.of(modelGenerator.getLabelModel())
+                .create();
+        testTask.setTaskLabels(Set.of(label));
         taskRepository.save(testTask);
 
-        //token = jwt().jwt(builder -> builder.subject("hexlet@example.com"));
+        var testTask2 = Instancio.of(modelGenerator.getTaskModel())
+                .create();
+        testTask2.setTaskStatus(testStatus);
+        taskRepository.save(testTask2);
     }
 
     @Test
-    @Transactional
     public void testIndex() throws Exception {
-
 
         MvcResult result = mockMvc.perform(get("/api/tasks").with(jwt()))
                 .andDo(print())
@@ -115,6 +110,29 @@ class TaskControllerTest {
         var actual = taskDTOS.stream().map(taskMapper::map).toList();
         var expected = taskRepository.findAll();
         assertThat(actual).containsExactlyInAnyOrderElementsOf(expected);
+    }
+
+    @Test
+    public void testFilteredIndex() throws Exception {
+        var titleCont = testTask.getName().substring(1);
+        var assigneeId = testTask.getAssignee().getId();
+        var status = testTask.getTaskStatus().getSlug();
+        var labelId = testTask.getTaskLabels().stream()
+                .map(Label::getId)
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("testTask with id " + testTask.getId()
+                        + " has no 'taskLabels' field in the testFilteredIndex"));
+
+        MvcResult result = mockMvc.perform(get("/api/tasks?titleCont=" + titleCont + "&assigneeId="
+                        + assigneeId + "&status=" + status + "&labelId=" + labelId).with(jwt()))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+
+        MockHttpServletResponse response = result.getResponse();
+        assertThatJson(response.getContentAsString())
+                .isArray()
+                .hasSize(1);
     }
 
     @Test

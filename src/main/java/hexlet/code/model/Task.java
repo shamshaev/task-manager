@@ -38,29 +38,25 @@ public class Task implements BaseEntity {
     private Long id;
 
     @NotBlank
-    @EqualsAndHashCode.Include
     @ToString.Include
     private String name;
 
-    @EqualsAndHashCode.Include
     @ToString.Include
     private Integer index;
 
-    @EqualsAndHashCode.Include
     @ToString.Include
     private String description;
 
     @ManyToOne(optional = false)
-    @EqualsAndHashCode.Include
     @ToString.Include
     private TaskStatus taskStatus;
 
     @ManyToOne
-    @EqualsAndHashCode.Include
     @ToString.Include
     private User assignee;
 
     @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, fetch = FetchType.LAZY)
+    @ToString.Include
     private Set<Label> taskLabels = new HashSet<>();
 
     @CreatedDate

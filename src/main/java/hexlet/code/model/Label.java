@@ -45,6 +45,7 @@ public class Label implements BaseEntity {
     private String name;
 
     @ManyToMany(mappedBy = "taskLabels", fetch = FetchType.LAZY)
+    @ToString.Include
     private Set<Task> tasks = new HashSet<>();;
 
     @CreatedDate
