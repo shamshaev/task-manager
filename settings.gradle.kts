@@ -1,1 +1,1 @@
-rootProject.name = "TaskManager"
+rootProject.name = "app"
