@@ -20,7 +20,7 @@ public class JWTUtils {
         var claims = JwtClaimsSet.builder()
                 .issuer("self")
                 .issuedAt(now)
-                .expiresAt(now.plus(6, ChronoUnit.HOURS))
+                .expiresAt(now.plus(1, ChronoUnit.HOURS))
                 .subject(username)
                 .build();
         return this.encoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
