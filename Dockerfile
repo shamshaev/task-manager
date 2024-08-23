@@ -6,9 +6,4 @@ COPY . /app
 
 RUN gradle installDist
 
-CMD ./build/install/TaskManager/bin/TaskManager
-
-#FROM ubuntu:latest
-#LABEL authors="andrey"
-
-#ENTRYPOINT ["top", "-b"]
+CMD ./build/install/app/bin/app
