@@ -45,11 +45,9 @@ public class User implements UserDetails, BaseEntity {
     @ToString.Include
     private String email;
 
-    @EqualsAndHashCode.Include
     @ToString.Include
     private String firstName;
 
-    @EqualsAndHashCode.Include
     @ToString.Include
     private String lastName;
 

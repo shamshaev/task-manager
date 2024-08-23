@@ -54,6 +54,7 @@ public class TaskStatusController {
     public TaskStatusDTO create(@RequestBody @Valid TaskStatusCreateDTO taskStatusData) {
         var taskStatus = taskStatusMapper.map(taskStatusData);
         taskStatusRepository.save(taskStatus);
+
         return taskStatusMapper.map(taskStatus);
     }
 
@@ -63,6 +64,7 @@ public class TaskStatusController {
                 .orElseThrow(() -> new ResourceNotFoundException("TaskStatus with id " + id + " not found"));
         taskStatusMapper.update(taskStatusData, taskStatus);
         taskStatusRepository.save(taskStatus);
+
         return taskStatusMapper.map(taskStatus);
     }
 

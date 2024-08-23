@@ -1,9 +1,9 @@
 package hexlet.code.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.HashSet;
 import java.util.Set;
 
 @Getter
@@ -14,7 +14,8 @@ public class LabelDTO {
 
     private String name;
 
-    private Set<Long> taskIds = new HashSet<>();
+    @JsonIgnore
+    private Set<Long> taskIds;
 
     private String createdAt;
 }

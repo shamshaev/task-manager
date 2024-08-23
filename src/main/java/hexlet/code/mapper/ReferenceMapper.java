@@ -1,5 +1,6 @@
 package hexlet.code.mapper;
 
+import hexlet.code.exception.ResourceNotFoundException;
 import hexlet.code.model.BaseEntity;
 import jakarta.persistence.EntityManager;
 import org.mapstruct.Mapper;
@@ -15,10 +16,13 @@ public abstract class ReferenceMapper {
     private EntityManager entityManager;
 
     public <T extends BaseEntity> T toEntity(Long id, @TargetType Class<T> entityClass) {
+        if (id != null && entityManager.find(entityClass, id) == null) {
+            throw new ResourceNotFoundException(entityClass.getSimpleName() + " with id '" + id + "' not found");
+        }
         return id != null ? entityManager.find(entityClass, id) : null;
     }
 
-    public Long toId(BaseEntity entity) {
-        return entity.getId();
+    public <T extends BaseEntity> Long toId(T entity) {
+        return entity != null ? entity.getId() : null;
     }
 }

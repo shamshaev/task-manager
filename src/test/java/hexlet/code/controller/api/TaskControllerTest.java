@@ -8,6 +8,7 @@ import hexlet.code.exception.ResourceNotFoundException;
 import hexlet.code.mapper.TaskMapper;
 import hexlet.code.model.Label;
 import hexlet.code.model.Task;
+import hexlet.code.repository.LabelRepository;
 import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.TaskStatusRepository;
 import hexlet.code.util.ModelGenerator;
@@ -62,6 +63,9 @@ class TaskControllerTest {
     private TaskStatusRepository taskStatusRepository;
 
     @Autowired
+    private LabelRepository labelRepository;
+
+    @Autowired
     private TaskMapper taskMapper;
 
     @Autowired
@@ -88,6 +92,7 @@ class TaskControllerTest {
         testTask.setAssignee(userUtils.getTestUser());
         var label = Instancio.of(modelGenerator.getLabelModel())
                 .create();
+        labelRepository.save(label);
         testTask.setTaskLabels(Set.of(label));
         taskRepository.save(testTask);
 
@@ -122,6 +127,8 @@ class TaskControllerTest {
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("testTask with id " + testTask.getId()
                         + " has no 'taskLabels' field in the testFilteredIndex"));
+
+        System.out.println(testTask);
 
         MvcResult result = mockMvc.perform(get("/api/tasks?titleCont=" + titleCont + "&assigneeId="
                         + assigneeId + "&status=" + status + "&labelId=" + labelId).with(jwt()))

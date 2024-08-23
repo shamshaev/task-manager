@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Getter
@@ -17,5 +18,5 @@ public class LabelCreateDTO {
     @Size(min = 3, max = 1000)
     private String name;
 
-    private Set<Long> taskIds;
+    private Set<Long> taskIds = new HashSet<>();
 }

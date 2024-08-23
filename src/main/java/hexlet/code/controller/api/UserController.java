@@ -6,7 +6,6 @@ import hexlet.code.dto.UserUpdateDTO;
 import hexlet.code.exception.ResourceNotFoundException;
 import hexlet.code.mapper.UserMapper;
 import hexlet.code.repository.UserRepository;
-import hexlet.code.util.UserUtils;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -34,9 +33,6 @@ public class UserController {
     @Autowired
     private UserMapper userMapper;
 
-    @Autowired
-    private UserUtils userUtils;
-
     @GetMapping("/users")
     public ResponseEntity<List<UserDTO>> index() {
         var users = userRepository.findAll().stream()
@@ -60,6 +56,7 @@ public class UserController {
     public UserDTO create(@RequestBody @Valid UserCreateDTO userData) {
         var user = userMapper.map(userData);
         userRepository.save(user);
+
         return userMapper.map(user);
     }
 
@@ -70,6 +67,7 @@ public class UserController {
                 .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " not found"));
         userMapper.update(userData, user);
         userRepository.save(user);
+
         return userMapper.map(user);
     }
 
