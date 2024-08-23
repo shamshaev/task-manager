@@ -23,8 +23,13 @@ import org.springframework.beans.factory.annotation.Autowired;
         unmappedTargetPolicy = ReportingPolicy.IGNORE
 )
 public abstract class TaskMapper {
-    @Autowired
+
     private TaskStatusRepository taskStatusRepository;
+
+    @Autowired
+    public void setTaskStatusRepository(TaskStatusRepository taskStatusRepository) {
+        this.taskStatusRepository = taskStatusRepository;
+    }
 
     @Mapping(source = "title", target = "name")
     @Mapping(source = "content", target = "description")

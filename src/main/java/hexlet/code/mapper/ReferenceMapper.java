@@ -12,8 +12,13 @@ import org.springframework.beans.factory.annotation.Autowired;
         componentModel = MappingConstants.ComponentModel.SPRING
 )
 public abstract class ReferenceMapper {
-    @Autowired
+
     private EntityManager entityManager;
+
+    @Autowired
+    public void setEntityManager(EntityManager entityManager) {
+        this.entityManager = entityManager;
+    }
 
     public <T extends BaseEntity> T toEntity(Long id, @TargetType Class<T> entityClass) {
         if (id != null && entityManager.find(entityClass, id) == null) {

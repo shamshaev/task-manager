@@ -24,8 +24,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 )
 public abstract class UserMapper {
 
-    @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @Mapping(source = "password", target = "passwordDigest")
     @BeanMapping(qualifiedByName = "encrypt")
