@@ -6,8 +6,8 @@ import hexlet.code.model.User;
 import hexlet.code.repository.LabelRepository;
 import hexlet.code.repository.TaskStatusRepository;
 import hexlet.code.service.CustomUserDetailsService;
-import hexlet.code.util.PreLabel;
-import hexlet.code.util.PreTaskStatus;
+import hexlet.code.util.LabelKit;
+import hexlet.code.util.TaskStatusKit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -25,22 +25,28 @@ public class DataInitializer implements ApplicationRunner {
     @Autowired
     private LabelRepository labelRepository;
 
+    @Autowired
+    private TaskStatusKit taskStatusKit;
+
+    @Autowired
+    private LabelKit labelKit;
+
     public void run(ApplicationArguments args) {
         var userData = new User();
         userData.setEmail("hexlet@example.com");
         userData.setPasswordDigest("qwerty");
         customUserDetailsService.createUser(userData);
 
-        for (PreTaskStatus preTaskStatus : PreTaskStatus.values()) {
+        for (var slug : taskStatusKit.getSlugs()) {
             var taskStatus = new TaskStatus();
-            taskStatus.setName(preTaskStatus.getName());
-            taskStatus.setSlug(preTaskStatus.getSlug());
+            taskStatus.setSlug(slug);
+            taskStatus.setName(taskStatusKit.getName(slug));
             taskStatusRepository.save(taskStatus);
         }
 
-        for (PreLabel preLabel : PreLabel.values()) {
+        for (var labelName : labelKit.getLabelNames()) {
             var label = new Label();
-            label.setName(preLabel.name().toLowerCase());
+            label.setName(labelName);
             labelRepository.save(label);
         }
     }
