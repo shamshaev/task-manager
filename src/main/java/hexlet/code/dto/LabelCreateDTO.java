@@ -1,6 +1,5 @@
 package hexlet.code.dto;
 
-import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -14,7 +13,6 @@ import java.util.Set;
 public class LabelCreateDTO {
 
     @NotNull
-    @Column(unique = true)
     @Size(min = 3, max = 1000)
     private String name;
 
