@@ -9,7 +9,6 @@ import hexlet.code.mapper.LabelMapper;
 import hexlet.code.model.Label;
 import hexlet.code.repository.LabelRepository;
 import hexlet.code.util.ModelGenerator;
-import jakarta.transaction.Transactional;
 import org.instancio.Instancio;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -76,7 +75,6 @@ class LabelControllerTest {
     }
 
     @Test
-    @Transactional
     public void testIndex() throws Exception {
         MvcResult result = mockMvc.perform(get("/api/labels").with(jwt()))
                 .andDo(print())
