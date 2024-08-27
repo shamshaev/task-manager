@@ -49,7 +49,7 @@ public class Label implements BaseEntity {
 
     @JsonIgnore
     @ManyToMany(mappedBy = "taskLabels", cascade = { CascadeType.PERSIST, CascadeType.MERGE })
-    private Set<Task> tasks = new HashSet<>();;
+    private Set<Task> tasks = new HashSet<>();
 
     @CreatedDate
     private LocalDate createdAt;
