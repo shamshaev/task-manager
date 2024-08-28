@@ -17,5 +17,5 @@ Automatic generation of Swagger UI and OpenAPI documentation, error tracking and
 
 ![screenshot_3](screenshots/screenshot_3.png?raw=true)
 
-Here is the link to the application (works until 26/08/2024): https://java-project-99-brrw.onrender.com
+Here is the link to the application (works until 27/09/2024): https://java-project-99-brrw.onrender.com
 
