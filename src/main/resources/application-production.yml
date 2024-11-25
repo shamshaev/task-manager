@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://dpg-cr7i70i3esus738ak34g-a:5432/prod_db2
-    username: prod_db2_user
-    password: 6mNarbc4hiq4TgKxwCEAOYyTQLH98Etx
+    url: jdbc:postgresql://dpg-csrsc4jv2p9s73bh8g10-a:5432/prod_db2
+    username: prod_db5_user
+    password: jeOGT1kdYDAEi4HbPadNR5Xa1mVmF0n7
     driver-class-name: org.postgresql.Driver
   jpa:
     database: postgresql
